@@ -25,6 +25,13 @@ func (impl *DataReader) ReadBytes(valueSize uint32) ([]uint8, error) {
 	return v.ReadBytes(valueSize)
 }
 
+func (impl *DataReader) LoadAsync(count uint32) (*DataReaderLoadOperation, error) {
+	itf := impl.MustQueryInterface(ole.NewGUID(GUIDIDataReader))
+	defer itf.Release()
+	v := (*IDataReader)(unsafe.Pointer(itf))
+	return v.LoadAsync(count)
+}
+
 const GUIDiDataReaderStatics string = "11fcbfc8-f93a-471b-b121-f379e349313c"
 const SignatureiDataReaderStatics string = "{11fcbfc8-f93a-471b-b121-f379e349313c}"
 

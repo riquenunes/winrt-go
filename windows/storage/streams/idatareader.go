@@ -69,3 +69,19 @@ func (v *IDataReader) ReadBytes(valueSize uint32) ([]uint8, error) {
 
 	return value, nil
 }
+
+func (v *IDataReader) LoadAsync(count uint32) (*DataReaderLoadOperation, error) {
+	var out *DataReaderLoadOperation
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().LoadAsync,
+		uintptr(unsafe.Pointer(v)),    // this
+		uintptr(count),                // in uint32
+		uintptr(unsafe.Pointer(&out)), // out DataReaderLoadOperation
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
+}
