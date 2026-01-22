@@ -63,3 +63,42 @@ func DataReaderFromBuffer(buffer *IBuffer) (*DataReader, error) {
 
 	return out, nil
 }
+
+const GUIDiDataReaderFactory string = "d7527847-57da-4e15-914c-06806699a098"
+const SignatureiDataReaderFactory string = "{d7527847-57da-4e15-914c-06806699a098}"
+
+type iDataReaderFactory struct {
+	ole.IInspectable
+}
+
+type iDataReaderFactoryVtbl struct {
+	ole.IInspectableVtbl
+
+	DataReaderCreateDataReader uintptr
+}
+
+func (v *iDataReaderFactory) VTable() *iDataReaderFactoryVtbl {
+	return (*iDataReaderFactoryVtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func DataReaderCreateDataReader(inputStream *IInputStream) (*DataReader, error) {
+	inspectable, err := ole.RoGetActivationFactory("Windows.Storage.Streams.DataReader", ole.NewGUID(GUIDiDataReaderFactory))
+	if err != nil {
+		return nil, err
+	}
+	v := (*iDataReaderFactory)(unsafe.Pointer(inspectable))
+
+	var out *DataReader
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().DataReaderCreateDataReader,
+		0,                                    // this is a static func, so there's no this
+		uintptr(unsafe.Pointer(inputStream)), // in IInputStream
+		uintptr(unsafe.Pointer(&out)),        // out DataReader
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
+}
