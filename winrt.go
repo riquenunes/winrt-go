@@ -288,3 +288,6 @@ package winrt
 
 // system
 //go:generate go run github.com/saltosystems/winrt-go/cmd/winrt-go-gen -debug -class Windows.System.User -method-filter !*
+
+// imaging
+//go:generate go run github.com/saltosystems/winrt-go/cmd/winrt-go-gen -debug -class Windows.Graphics.Imaging.ImageStream

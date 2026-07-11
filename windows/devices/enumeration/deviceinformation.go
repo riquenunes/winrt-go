@@ -6,15 +6,53 @@
 package enumeration
 
 import (
+	"syscall"
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
+	"github.com/saltosystems/winrt-go/windows/foundation"
+	"github.com/saltosystems/winrt-go/windows/foundation/collections"
 )
 
 const SignatureDeviceInformation string = "rc(Windows.Devices.Enumeration.DeviceInformation;{aba0fb95-4398-489d-8e44-e6130927011f})"
 
 type DeviceInformation struct {
 	ole.IUnknown
+}
+
+func (impl *DeviceInformation) GetId() (string, error) {
+	itf := impl.MustQueryInterface(ole.NewGUID(GUIDiDeviceInformation))
+	defer itf.Release()
+	v := (*iDeviceInformation)(unsafe.Pointer(itf))
+	return v.GetId()
+}
+
+func (impl *DeviceInformation) GetName() (string, error) {
+	itf := impl.MustQueryInterface(ole.NewGUID(GUIDiDeviceInformation))
+	defer itf.Release()
+	v := (*iDeviceInformation)(unsafe.Pointer(itf))
+	return v.GetName()
+}
+
+func (impl *DeviceInformation) GetProperties() (*collections.IMapView, error) {
+	itf := impl.MustQueryInterface(ole.NewGUID(GUIDiDeviceInformation))
+	defer itf.Release()
+	v := (*iDeviceInformation)(unsafe.Pointer(itf))
+	return v.GetProperties()
+}
+
+func (impl *DeviceInformation) GetKind() (DeviceInformationKind, error) {
+	itf := impl.MustQueryInterface(ole.NewGUID(GUIDiDeviceInformation2))
+	defer itf.Release()
+	v := (*iDeviceInformation2)(unsafe.Pointer(itf))
+	return v.GetKind()
+}
+
+func (impl *DeviceInformation) GetPairing() (*DeviceInformationPairing, error) {
+	itf := impl.MustQueryInterface(ole.NewGUID(GUIDiDeviceInformation2))
+	defer itf.Release()
+	v := (*iDeviceInformation2)(unsafe.Pointer(itf))
+	return v.GetPairing()
 }
 
 const GUIDiDeviceInformation string = "aba0fb95-4398-489d-8e44-e6130927011f"
@@ -42,6 +80,55 @@ func (v *iDeviceInformation) VTable() *iDeviceInformationVtbl {
 	return (*iDeviceInformationVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
+func (v *iDeviceInformation) GetId() (string, error) {
+	var outHStr ole.HString
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().GetId,
+		uintptr(unsafe.Pointer(v)),        // this
+		uintptr(unsafe.Pointer(&outHStr)), // out string
+	)
+
+	if hr != 0 {
+		return "", ole.NewError(hr)
+	}
+
+	out := outHStr.String()
+	ole.DeleteHString(outHStr)
+	return out, nil
+}
+
+func (v *iDeviceInformation) GetName() (string, error) {
+	var outHStr ole.HString
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().GetName,
+		uintptr(unsafe.Pointer(v)),        // this
+		uintptr(unsafe.Pointer(&outHStr)), // out string
+	)
+
+	if hr != 0 {
+		return "", ole.NewError(hr)
+	}
+
+	out := outHStr.String()
+	ole.DeleteHString(outHStr)
+	return out, nil
+}
+
+func (v *iDeviceInformation) GetProperties() (*collections.IMapView, error) {
+	var out *collections.IMapView
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().GetProperties,
+		uintptr(unsafe.Pointer(v)),    // this
+		uintptr(unsafe.Pointer(&out)), // out collections.IMapView
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
+}
+
 const GUIDiDeviceInformation2 string = "f156a638-7997-48d9-a10c-269d46533f48"
 const SignatureiDeviceInformation2 string = "{f156a638-7997-48d9-a10c-269d46533f48}"
 
@@ -58,4 +145,162 @@ type iDeviceInformation2Vtbl struct {
 
 func (v *iDeviceInformation2) VTable() *iDeviceInformation2Vtbl {
 	return (*iDeviceInformation2Vtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func (v *iDeviceInformation2) GetKind() (DeviceInformationKind, error) {
+	var out DeviceInformationKind
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().GetKind,
+		uintptr(unsafe.Pointer(v)),    // this
+		uintptr(unsafe.Pointer(&out)), // out DeviceInformationKind
+	)
+
+	if hr != 0 {
+		return DeviceInformationKindUnknown, ole.NewError(hr)
+	}
+
+	return out, nil
+}
+
+func (v *iDeviceInformation2) GetPairing() (*DeviceInformationPairing, error) {
+	var out *DeviceInformationPairing
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().GetPairing,
+		uintptr(unsafe.Pointer(v)),    // this
+		uintptr(unsafe.Pointer(&out)), // out DeviceInformationPairing
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
+}
+
+const GUIDiDeviceInformationStatics string = "c17f100e-3a46-4a78-8013-769dc9b97390"
+const SignatureiDeviceInformationStatics string = "{c17f100e-3a46-4a78-8013-769dc9b97390}"
+
+type iDeviceInformationStatics struct {
+	ole.IInspectable
+}
+
+type iDeviceInformationStaticsVtbl struct {
+	ole.IInspectableVtbl
+
+	DeviceInformationCreateFromIdAsync                             uintptr
+	DeviceInformationCreateFromIdAsyncAdditionalProperties         uintptr
+	DeviceInformationFindAllAsync                                  uintptr
+	DeviceInformationFindAllAsyncDeviceClass                       uintptr
+	DeviceInformationFindAllAsyncAqsFilter                         uintptr
+	DeviceInformationFindAllAsyncAqsFilterAndAdditionalProperties  uintptr
+	DeviceInformationCreateWatcher                                 uintptr
+	DeviceInformationCreateWatcherDeviceClass                      uintptr
+	DeviceInformationCreateWatcherAqsFilter                        uintptr
+	DeviceInformationCreateWatcherAqsFilterAndAdditionalProperties uintptr
+}
+
+func (v *iDeviceInformationStatics) VTable() *iDeviceInformationStaticsVtbl {
+	return (*iDeviceInformationStaticsVtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func DeviceInformationCreateFromIdAsync(deviceId string) (*foundation.IAsyncOperation, error) {
+	inspectable, err := ole.RoGetActivationFactory("Windows.Devices.Enumeration.DeviceInformation", ole.NewGUID(GUIDiDeviceInformationStatics))
+	if err != nil {
+		return nil, err
+	}
+	v := (*iDeviceInformationStatics)(unsafe.Pointer(inspectable))
+
+	var out *foundation.IAsyncOperation
+	deviceIdHStr, err := ole.NewHString(deviceId)
+	if err != nil {
+		return nil, err
+	}
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().DeviceInformationCreateFromIdAsync,
+		uintptr(unsafe.Pointer(v)),    // this (activation-factory instance method)
+		uintptr(deviceIdHStr),         // in string
+		uintptr(unsafe.Pointer(&out)), // out foundation.IAsyncOperation
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
+}
+
+const GUIDiDeviceInformationStatics2 string = "493b4f34-a84f-45fd-9167-15d1cb1bd1f9"
+const SignatureiDeviceInformationStatics2 string = "{493b4f34-a84f-45fd-9167-15d1cb1bd1f9}"
+
+type iDeviceInformationStatics2 struct {
+	ole.IInspectable
+}
+
+type iDeviceInformationStatics2Vtbl struct {
+	ole.IInspectableVtbl
+
+	DeviceInformationGetAqsFilterFromDeviceClass                           uintptr
+	DeviceInformationCreateFromIdAsyncWithKindAndAdditionalProperties      uintptr
+	DeviceInformationFindAllAsyncWithKindAqsFilterAndAdditionalProperties  uintptr
+	DeviceInformationCreateWatcherWithKindAqsFilterAndAdditionalProperties uintptr
+}
+
+func (v *iDeviceInformationStatics2) VTable() *iDeviceInformationStatics2Vtbl {
+	return (*iDeviceInformationStatics2Vtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func DeviceInformationFindAllAsyncWithKindAqsFilterAndAdditionalProperties(aqsFilter string, additionalProperties *collections.IIterable, kind DeviceInformationKind) (*foundation.IAsyncOperation, error) {
+	inspectable, err := ole.RoGetActivationFactory("Windows.Devices.Enumeration.DeviceInformation", ole.NewGUID(GUIDiDeviceInformationStatics2))
+	if err != nil {
+		return nil, err
+	}
+	v := (*iDeviceInformationStatics2)(unsafe.Pointer(inspectable))
+
+	var out *foundation.IAsyncOperation
+	aqsFilterHStr, err := ole.NewHString(aqsFilter)
+	if err != nil {
+		return nil, err
+	}
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().DeviceInformationFindAllAsyncWithKindAqsFilterAndAdditionalProperties,
+		uintptr(unsafe.Pointer(v)),                    // this (activation-factory instance method)
+		uintptr(aqsFilterHStr),                        // in string
+		uintptr(unsafe.Pointer(additionalProperties)), // in collections.IIterable
+		uintptr(kind),                                 // in DeviceInformationKind
+		uintptr(unsafe.Pointer(&out)),                 // out foundation.IAsyncOperation
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
+}
+
+func DeviceInformationCreateWatcherWithKindAqsFilterAndAdditionalProperties(aqsFilter string, additionalProperties *collections.IIterable, kind DeviceInformationKind) (*DeviceWatcher, error) {
+	inspectable, err := ole.RoGetActivationFactory("Windows.Devices.Enumeration.DeviceInformation", ole.NewGUID(GUIDiDeviceInformationStatics2))
+	if err != nil {
+		return nil, err
+	}
+	v := (*iDeviceInformationStatics2)(unsafe.Pointer(inspectable))
+
+	var out *DeviceWatcher
+	aqsFilterHStr, err := ole.NewHString(aqsFilter)
+	if err != nil {
+		return nil, err
+	}
+	hr, _, _ := syscall.SyscallN(
+		v.VTable().DeviceInformationCreateWatcherWithKindAqsFilterAndAdditionalProperties,
+		uintptr(unsafe.Pointer(v)),                    // this (activation-factory instance method)
+		uintptr(aqsFilterHStr),                        // in string
+		uintptr(unsafe.Pointer(additionalProperties)), // in collections.IIterable
+		uintptr(kind),                                 // in DeviceInformationKind
+		uintptr(unsafe.Pointer(&out)),                 // out DeviceWatcher
+	)
+
+	if hr != 0 {
+		return nil, ole.NewError(hr)
+	}
+
+	return out, nil
 }
